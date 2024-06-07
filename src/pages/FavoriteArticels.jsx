@@ -1,9 +1,15 @@
-import React from 'react'
+import React from 'react';
+import Feeds from '../components/Feeds';
 
-const FavoriteArticels = () => {
+const FavoritePage = () => {
   return (
-    <div className=' bg-red-500'>FavoriteArticels</div>
-  )
-}
+    <div>
+    
+      <div>
+        <Feeds isFavorite={true} />
+      </div>
+    </div>
+  );
+};
 
-export default FavoriteArticels
+export default FavoritePage;

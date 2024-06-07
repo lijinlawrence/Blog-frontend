@@ -1,165 +1,172 @@
-  import React, { useContext, useEffect, useState } from "react";
-  import { FaHeart, FaRegTrashAlt } from "react-icons/fa";
-  import profileImage from "../assets/profileimage.png";
-  import { deleteUserPostApi, userPostApi } from "../services/allApi";
-  import { AddPostResponseContext } from "../context/contextShare";
-  import axios from "axios";
-  import { Link, useParams } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { FaHeart, FaRegTrashAlt } from "react-icons/fa";
+import profileImage from "../assets/profileimage.png";
+import {  userPostApi } from "../services/allApi";
+import { AddPostResponseContext } from "../context/contextShare";
+import axios from "axios";
+import { Link, useParams } from "react-router-dom";
+import { BASE_URL } from "../services/baseUrl";
 
-  const MyArticle = () => {
-    const { addPostResponse, setAddPostResponse } = useContext(
-      AddPostResponseContext
-    );
-    const [userPosts, setUserPosts] = useState([]);
-
-  
-   
-
-
-
-  //  Fetch User Posts
-    const getUserPosts = async () => {
-      const token = sessionStorage.getItem("token");
-      const userId = JSON.parse(sessionStorage.getItem("existingUser"))?._id;
-
-      if (token && userId) {
-        const reqHeader = {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        };
-
-        try {
-          const result = await userPostApi(userId, reqHeader);
-          if (result.status === 200) {
-            setUserPosts(result.data);
-          } else {
-            setError(result.response.data.message);
-          }
-        } catch (error) {
-          setError(error.message);
-        }
-      } else {
-        setError("User is not authenticated.");
-      }
-    };
-
-    useEffect(() => {
-      getUserPosts();
-    }, [addPostResponse]);
-
-    // const handleDelete = async (id) => {
-    //   const token = sessionStorage.getItem("token");
-    //   const reqHeader = {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${token}`,
-    //   };
-
-    //   try {
-    //     const result = await deleteUserPostApi(id, reqHeader);
-    //     if (result.status === 200) {
-    //       getUserPosts(); // Fetch the updated posts list
-    //     } else {
-    //       console.error(result.response.data.message);
-    //     }
-    //   } catch (error) {
-    //     console.error(error.message);
-    //   }
-    // };
+const MyArticle = () => {
+  const { addPostResponse, setAddPostResponse } = useContext(
+    AddPostResponseContext
+  );
+  const [userPosts, setUserPosts] = useState([]);
+  const [error, setError] = useState(null);
 
 
 
-    // delete Article
+  const getUserPosts = async () => {
+    const token = sessionStorage.getItem("token");
+    const userId = JSON.parse(sessionStorage.getItem("existingUser"))?._id;
 
-    const handleDelete = async (id) => {
+    if (token && userId) {
+      const reqHeader = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       try {
-        const token = sessionStorage.getItem("token");
-        const response = await axios.delete(
-          `http://localhost:7000/api/posts/${id}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        console.log(response);
-        const confirmation = window.confirm(
-          "Are You sure You Want delete this post "
-        );
-
-        if (!confirmation) {
-          return;
-        }
-        if (response.status === 200) {
-          await getUserPosts();
+        const result = await userPostApi(userId, reqHeader);
+        if (result.status === 200) {
+          setUserPosts(result.data);
         } else {
-          throw new Error(response.message);
+          setError(result.response.data.message);
         }
       } catch (error) {
-        console.log(error.message);
+        setError(error.message);
       }
-    };
+    } else {
+      setError("User is not authenticated.");
+    }
+  };
 
-  
+  useEffect(() => {
+    getUserPosts();
+  }, [addPostResponse]);
 
-    return (
-      <div className="w-3/4 mx-auto">
-        {userPosts?.length > 0? (
-          userPosts.map((article) => (
-            <div className="py-5" key={article._id}>
-              <div className="flex justify-between py-5">
-                <div className="flex gap-5">
-                  <img src={profileImage} alt="" className="w-10 h-10" />
-                  <div>
-                    <h1 className="text-green-500 hover:underline hover:text-gray-400">
-                      {article.name || "Author Name"}
-                    </h1>
-                    <p className="font-thin text-xs">
-                      {new Date(article.createdAt).toDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="gap-5 flex">
-                  <button className="btn bg-transparent border-green-500 hover:bg-green-500 hover:text-white text-green-500 text-xs">
-                    <FaHeart />
-                    {article.likes || 0}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(article._id)}
-                    className="btn bg-transparent border-red-500 hover:bg-red-500 hover:text-white text-red-500 text-xs"
-                  >
-                    <FaRegTrashAlt />
-                    delete
-                  </button>
+  const handleDelete = async (id) => {
+    const confirmation = window.confirm(
+      "Are you sure you want to delete this post?"
+    );
+    if (!confirmation) return;
+
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.delete(`${BASE_URL}/api/posts/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        await getUserPosts();
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  // add favorites
+
+  const handleFavorite = async (postId) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.put(
+        `${BASE_URL}/api/posts/favorite/${postId}`,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update the post in the local state
+      setUserPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId ? response.data.post : post
+        )
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div className="w-2/4 mx-auto py-5">
+      <h1>My Articles</h1>
+      <hr />
+      {error && <p className="text-red-500">{error}</p>}
+      {userPosts.length === 0 ? (
+        <p>No articles found.</p>
+      ) : (
+        userPosts.map((post) => (
+          <div key={post._id} className="py-5">
+            <div className="flex justify-between py-5">
+              <div className="flex gap-5">
+                <img src={profileImage} alt="" className="w-10 h-10" />
+                <div>
+                  <h1 className="text-green-500 hover:underline hover:text-gray-400">
+                    {post.name}
+                  </h1>
+                  <p className="font-thin text-xs">
+                    {new Date(post.createdAt).toDateString()}
+                  </p>
                 </div>
               </div>
               <div>
-              <Link to={`/single/${article._id}`}><h1 className="text-2xl font-bold">{article.title}</h1>
-                <p className="font-thin">{article.about}</p></Link>  
-                <br />
-                <br />
-                <div className="flex justify-between">
-                <Link to={`/single/${article._id}`}><span>read more...</span></Link>  
-                  <div className="flex cursor-pointer gap-2">
-                    {article.tags.map((tag, index) => (
-                      <p
-                        key={index}
-                        className="h-6 text-xs border-2 text-center rounded-2xl px-2 bg-transparent"
-                      >
-                        {tag}
-                      </p>
-                    ))}
-                  </div>
+                <button
+                  className="btn bg-transparent border-green-500 hover:bg-green-500 hover:text-white text-green-500 text-xs"
+                  onClick={() => handleFavorite(post._id)}
+                >
+                  <FaHeart />
+                  {post.favorites.length || 0}
+                </button>
+                <button
+                  className="btn bg-transparent border-red-500 hover:bg-red-500 hover:text-white text-red-500 text-xs ml-2"
+                  onClick={() => handleDelete(post._id)}
+                >
+                  <FaRegTrashAlt />
+                </button>
+              </div>
+            </div>
+            <div>
+              <Link to={`/single/${post._id}`}>
+                {" "}
+                <h1 className="text-2xl font-bold">{post.title}</h1>
+                <p className="font-thin">{post.about}</p>
+              </Link>
+              <br />
+              <br />
+              <div className="flex justify-between">
+                <Link to={`/single/${post._id}`}>
+                  {" "}
+                  <span>read more...</span>
+                </Link>
+                <div className="flex cursor-pointer gap-2">
+                  {post.tags.map((tag, index) => (
+                    <p
+                      key={index}
+                      className="h-6 text-xs border-2 text-center rounded-2xl px-2 bg-transparent"
+                    >
+                      {tag}
+                    </p>
+                  ))}
                 </div>
               </div>
-              <hr />
             </div>
-          ))
-        ):<div className=" flex justify-center items-center text-4xl">No Posts Found</div>}
-      
-      </div>
-    );
-  };
+            <hr />
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
 
-  export default MyArticle;
+export default MyArticle;

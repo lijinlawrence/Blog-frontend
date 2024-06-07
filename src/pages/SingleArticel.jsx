@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import profileImage from "../assets/profileimage.png";
+import { BASE_URL } from "../services/baseUrl";
 
 
 const SingleArticle = () => {
@@ -15,7 +16,7 @@ const SingleArticle = () => {
     const fetchArticle = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:7000/api/posts/${id}`
+          `${BASE_URL}/api/posts/${id}`
         );
         setArticle(response.data); 
         console.log(article);
@@ -32,7 +33,7 @@ const SingleArticle = () => {
     try {
       const token = sessionStorage.getItem("token");
       const response = await axios.delete(
-        `http://localhost:7000/api/posts/${id}`,
+        `${BASE_URL}/api/posts/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -134,10 +135,10 @@ const SingleArticle = () => {
             </div>
 
             <div className="flex gap-3" >
-              <button className="btn w-36 btn-sm  bg-transparent text-gray-400   hover:text-black  ">
+            <Link to={`/editArticle/${article._id}`}>  <button className="btn w-36 btn-sm  bg-transparent  hover:text-black  ">
                 <CiEdit />
                 Edit Article
-              </button>
+              </button></Link>
               <button  onClick={() => handleDelete(article._id)} className="btn w-36 btn-sm bg-transparent border-red-500 text-red-700 hover:text-white hover:bg-red-500  ">
                 <MdDelete />
                 Delete Article

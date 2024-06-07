@@ -1,73 +1,71 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createPostApi, userPostApi } from "../services/allApi.js";
+import { useNavigate, useParams } from "react-router-dom";
+
 import { AddPostResponseContext } from "../context/contextShare.jsx";
+import axios from "axios";
+import { BASE_URL } from "../services/baseUrl.js";
 
 const EditArticle = () => {
-  const {addPostResponse,setAddPostResponse}=useContext(AddPostResponseContext)
-  const [userPosts, setUserPosts] = useState({});
-  console.log(userPosts);
-
-  const navigate = useNavigate();
+  const { setAddPostResponse } = useContext(AddPostResponseContext);
   const [postData, setPostData] = useState({
-    title: userPosts[0].title,
-    about:"",
+    title: "",
+    about: "",
     body: "",
-    tags: ""
+    tags: "",
   });
-  const [token, setToken] = useState("");
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  console.log(userPosts);
+  const [token, setToken] = useState("");
+
+  const { postId } = useParams();
+  console.log(postId);
+
+  // getSingle Post
+
+  const getSinglePost = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:7000/api/posts/${postId}`
+      );
+      console.log(response);
+      if (response.status === 200) {
+        const post = response.data;
+        setPostData({
+          title: post.title || "",
+          about: post.about || "",
+          body: post.body || "",
+          tags: post.tags ? post.tags.join(", ") : "",
+        });
+       
+      } else {
+        setError(result.response.data.message);
+      }
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  useEffect(() => {
+    const storedToken = sessionStorage.getItem("token");
+    setToken(storedToken);
+    getSinglePost();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPostData({
       ...postData,
-      [name]: value
-    }); 
+      [name]: value,
+    });
   };
 
-  useEffect(() => {
-    const savedToken = sessionStorage.getItem("token");
-    if (savedToken) {
-      setToken(savedToken);
-    }
-  }, []);
-
-  //  Fetch User Posts
-  const getUserPosts = async () => {
-    const token = sessionStorage.getItem("token");
-    const userId = JSON.parse(sessionStorage.getItem("existingUser"))?._id;
-
-    if (token && userId) {
-      const reqHeader = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      };
-
-      try {
-        const result = await userPostApi(userId, reqHeader);
-        if (result.status === 200) {
-          setUserPosts(result.data);
-        } else {
-          setError(result.response.data.message);
-        }
-      } catch (error) {
-        setError(error.message);
-      }
-    } else {
-      setError("User is not authenticated.");
-    }
-  };
-
-  useEffect(() => {
-    getUserPosts();
-  }, [addPostResponse]);
-
-  const handlePublish = async () => {
-    const { title,about, body, tags } = postData;
  
+
+  // updatePost
+
+  const handleUpdate = async () => {
+    const { title, about, body, tags } = postData;
 
     if (!title || !about || !body || !tags) {
       alert("Please fill all the fields");
@@ -78,36 +76,40 @@ const EditArticle = () => {
     setError(null);
 
     try {
-      const reqBody = { title,about, body, tags: tags.split(",").map(tag => tag.trim()) };
-    console.log("Request Body:", reqBody); // Log request body
+      const reqBody = {
+        title,
+        about,
+        body,
+        tags,
+      };
 
       if (token) {
         const reqHeader = {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         };
-        console.log("Request Header:", reqHeader); // Log request headers
 
-    
+        const response = await axios.put(
+          `${BASE_URL}/api/posts/updatePost/${postId}`,
+          reqBody,
+          reqHeader
+        );
+        console.log(response);
 
-        const response = await updatePostApi(postData, reqHeader);
-        console.log("Response:", response); // Log the response
-
-        if (response.status === 201) {
-          alert("Post created successfully");
+        if (response.status === 200) {
+          alert("Article updated successfully");
           navigate("/user/article");
-          setAddPostResponse(response.data)
-          console.log(addPostResponse);
+          setAddPostResponse(response.data);
         } else {
-          console.error('Failed response:', response);
-          alert("Failed to publish the article");
+          alert("Failed to update the article");
         }
       } else {
         alert("Token is missing");
       }
     } catch (error) {
-      console.error('Error during post creation:', error);
-      setError('An error occurred while publishing the article');
+      console.error("Error during article update:", error);
     } finally {
       setLoading(false);
     }
@@ -128,7 +130,7 @@ const EditArticle = () => {
         <input
           type="text"
           name="about"
-          placeholder="What's this articel about?"
+          placeholder="What's this article about?"
           className="input input-bordered w-full max-w-4xl"
           value={postData.about}
           onChange={handleChange}
@@ -149,11 +151,11 @@ const EditArticle = () => {
           onChange={handleChange}
         />
         <button
-          onClick={handlePublish}
+          onClick={handleUpdate}
           className="bg-green-500 btn text-white hover:bg-green-700 btn-wide mt-5"
           disabled={loading}
         >
-          {loading ? 'Publishing...' : 'Publish Article'}
+          {loading ? "Updating..." : "Update Article"}
         </button>
       </div>
     </div>

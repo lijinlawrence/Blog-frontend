@@ -1,96 +1,110 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { tokenAuthorizationContext } from "../context/tokenAuth";
 import { MdOutlineOpenInNew } from "react-icons/md";
 import { IoSettingsOutline } from "react-icons/io5";
-import { AddPostResponseContext } from "../context/contextShare";
 
 const NavigationBar = () => {
+  const [userName, setUserName] = useState("");
 
-  const [userName ,setUserName] = useState("")
+  const { isAuthorized } = useContext(tokenAuthorizationContext);
 
-  const { isAuthorized, setIsAuthorized } = useContext(
-    tokenAuthorizationContext
-  );
-
-
-  useEffect(()=>{
-
+  useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("existingUser"))?.name;
     console.log(user);
 
-    
-    if(user){
-      setUserName(user)
+    if (user) {
+      setUserName(user);
     }
-   
-  },[])
-
-  
+  }, [isAuthorized]);
 
   return (
     <div>
-      <div className=" navbar  flex justify-around items-center">
-        <div className="">
-          <Link to="/" className="text-2xl text-green-500 font-bold ">
-            Conduit{" "}
-          </Link>
+      <div className="navbar flex justify-around items-center">
+        <div>
+          <NavLink to="/" className="text-2xl text-green-500 font-bold">
+            Conduit
+          </NavLink>
         </div>
         {isAuthorized && userName ? (
           <div>
-            <div className="">
-              <ul className=" flex gap-10 px-1">
-                <li>
-                  <Link to="/" className=" text-black">
-                    Home
-                  </Link>
-                </li>
-                <li className="flex">
-                  <Link to="/newPost" className=" text-gray-400 hover:text-black flex gap-2 justify-center items-center">
-                    <MdOutlineOpenInNew />
-                    New Post
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/settings"
-                    className=" text-gray-400 hover:text-black flex gap-2 justify-center items-center"
-                  >
-                    <IoSettingsOutline />
-                    Settings
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/user/article"
-                    className=" text-gray-400 hover:text-black"
-                  >
-                    {userName}
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <ul className="flex gap-10 px-1">
+              <li>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    isActive ? "text-black" : "text-gray-400 hover:text-black"
+                  }
+                >
+                  Home
+                </NavLink>
+              </li>
+              <li className="flex">
+                <NavLink
+                  to="/newPost"
+                  className={({ isActive }) =>
+                    isActive ? "text-black flex justify-center items-center" : "text-gray-400 hover:text-black flex justify-center items-center"
+                  }
+                >
+                  <MdOutlineOpenInNew />
+                  New Post
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/settings"
+                  className={({ isActive }) =>
+                    isActive ? "text-black flex justify-center items-center" : "text-gray-400 hover:text-black flex justify-center items-center " 
+                  }
+                >
+                  <IoSettingsOutline />
+                  Settings
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/user/article"
+                  className={({ isActive }) =>
+                    isActive ? "text-black" : "text-gray-400 hover:text-black"
+                  }
+                >
+                  {userName}
+                </NavLink>
+              </li>
+            </ul>
           </div>
         ) : (
-          <div className="">
-            <ul className=" flex gap-5 px-1">
+          <div>
+            <ul className="flex gap-5 px-1">
               <li>
-                <Link to="/" className=" text-black">
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    isActive ? "text-black" : "text-gray-400 hover:text-black"
+                  }
+                >
                   Home
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link to="/login" className=" text-gray-400 hover:text-black">
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) =>
+                    isActive ? "text-black" : "text-gray-400 hover:text-black"
+                  }
+                >
                   Sign In
-                </Link>
+                </NavLink>
               </li>
               <li>
-                <Link
+                <NavLink
                   to="/register"
-                  className=" text-gray-400 hover:text-black"
+                  className={({ isActive }) =>
+                    isActive ? "text-black" : "text-gray-400 hover:text-black"
+                  }
                 >
                   Sign Up
-                </Link>
+                </NavLink>
               </li>
             </ul>
           </div>

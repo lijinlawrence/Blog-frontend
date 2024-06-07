@@ -1,55 +1,77 @@
 import React, { useEffect, useState } from "react";
-import profile from "../assets/profileimage.png";
 import { Link, NavLink } from "react-router-dom";
-import MyArticle from "./MyArticle";
-import FavoriteArticels from "./FavoriteArticels";
+import axios from "axios";
+import { BASE_URL } from "../services/baseUrl";
+import profilePlaceholder from "../assets/profileimage.png"; // Placeholder image
+
 const UserPage = () => {
-  const [userName, setUserName] = useState("");
+  const [userData, setUserData] = useState({});
 
   useEffect(() => {
-    const user = JSON.parse(sessionStorage.getItem("existingUser"))?.name;
-    console.log(user);
+    const fetchUserData = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${BASE_URL}/api/users/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUserData(response.data.user);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+      }
+    };
 
-    if (user) {
-      setUserName(user);
-    }
+    fetchUserData();
   }, []);
+
+  console.log(userData);
 
   return (
     <div>
-      <div className=" h-[30%] w-full bg-gray-200 py-12 flex justify-center items-center flex-col">
-        <img className="w-24" src={profile} alt="" />
-       {userName && <p className="  text-xl text-black">{userName}</p> } 
+      <div className="h-[30%] w-full bg-gray-200 py-12 flex-col">
+        <div className="flex flex-col justify-center items-center">
+          <img
+            className="w-24 rounded-full"
+            src={userData.image || profilePlaceholder}
+            alt="Profile"
+          />
+          {userData.name && <p className="text-xl text-black">{userData.name}</p>}
+          {userData.bio && <p className=" text-2xl mt-5">{userData.bio}</p>}
+        </div>
+        <div className="flex justify-around">
+          <div></div>
+          <Link to="/settings">
+            <button className="bg-transparent border-white btn hover:text-white btn-sm mt-5">
+              Edit Profile settings
+            </button>
+          </Link>
+        </div>
       </div>
-      <div className=" py-10">
-        <div className=" w-3/4 mx-auto">
-          <ul className=" flex gap-5">
-            <li className="">
+
+      <div className="py-10">
+        <div className="w-3/4 mx-auto">
+          <ul className="flex gap-5">
+            <li>
               <NavLink
                 to="article"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-green-500 "
-                    : "text-gray-400 hover:text-black"
+                  isActive ? "text-green-500" : "text-gray-400 hover:text-black"
                 }
               >
                 My Articles
-              </NavLink>{" "}
+              </NavLink>
             </li>
-            <li className="">
+            <li>
               <NavLink
                 to="favorite"
                 className={({ isActive }) =>
-                  isActive
-                    ? "text-green-500 "
-                    : "text-gray-400 hover:text-black"
+                  isActive ? "text-green-500" : "text-gray-400 hover:text-black"
                 }
               >
                 Favorite Articles
-              </NavLink>{" "}
+              </NavLink>
             </li>
           </ul>
-          <hr className=" mt-3" />
+          <hr className="mt-3" />
         </div>
       </div>
     </div>

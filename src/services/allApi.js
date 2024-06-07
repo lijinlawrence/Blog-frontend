@@ -19,8 +19,9 @@ export const userPostApi  = async (userId,reqHeader)=>{
     return await commonAPI('GET',`${BASE_URL}/api/posts/userPost/${userId}`,null,reqHeader)
 }
 
-export const deleteUserPostApi = async (postId,reqHeader )=>{
-    return await commonAPI('DELETE',`${BASE_URL}/api/posts/${postId}`,null,reqHeader)
+export const userSinglePost = async (postId)=>{
+    return await commonAPI("GET ",`${BASE_URL}/api/posts/${postId}`,null,"") 
 }
+
 
 

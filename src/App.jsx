@@ -31,7 +31,7 @@ function App() {
             <Route path="favorite" element={<FavoriteArticels />} />
             </Route>
           <Route path="/single/:id" element={<SingleArticle/>}> </Route>
-          <Route path="/editArticle/:id" element={<EditArticle/>}></Route>
+          <Route path="/editArticle/:postId" element={<EditArticle/>}></Route>
 
           <Route path="*" element={<ErrorPage />} />
         </Routes>
