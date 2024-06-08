@@ -26,7 +26,7 @@ const EditArticle = () => {
   const getSinglePost = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:7000/api/posts/${postId}`
+        `${BASE_URL}/api/posts/${postId}`
       );
       console.log(response);
       if (response.status === 200) {
@@ -118,7 +118,6 @@ const EditArticle = () => {
   return (
     <div className="w-3/4 mx-auto flex justify-center items-center py-20">
       <div className="flex flex-col w-full justify-center items-center gap-5">
-        {error && <div className="alert alert-error">{error}</div>}
         <input
           type="text"
           name="title"

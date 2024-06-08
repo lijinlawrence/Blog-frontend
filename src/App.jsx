@@ -5,7 +5,6 @@ import RegisterPage from "./pages/RegisterPage";
 import NavigationBar from "./components/NavigationBar";
 import NewPost from "./pages/NewPost";
 import Settings from "./pages/Settings";
-import UserPage from "./pages/UserPage";
 import MyArticle from "./pages/MyArticle";
 import FavoriteArticels from "./pages/FavoriteArticels";
 import UserLayout from "./Layouts/UserLayout";

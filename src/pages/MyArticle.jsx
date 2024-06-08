@@ -1,20 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FaHeart, FaRegTrashAlt } from "react-icons/fa";
 import profileImage from "../assets/profileimage.png";
-import {  userPostApi } from "../services/allApi";
 import { AddPostResponseContext } from "../context/contextShare";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import { BASE_URL } from "../services/baseUrl";
 
 const MyArticle = () => {
-  const { addPostResponse, setAddPostResponse } = useContext(
-    AddPostResponseContext
-  );
+  const { addPostResponse, setAddPostResponse } = useContext(AddPostResponseContext);
   const [userPosts, setUserPosts] = useState([]);
   const [error, setError] = useState(null);
-
-
 
   const getUserPosts = async () => {
     const token = sessionStorage.getItem("token");
@@ -22,19 +17,21 @@ const MyArticle = () => {
 
     if (token && userId) {
       const reqHeader = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       };
 
       try {
-        const result = await userPostApi(userId, reqHeader);
+        const result = await axios.get(`${BASE_URL}/api/posts/userPost/${userId}`, reqHeader);  
         if (result.status === 200) {
           setUserPosts(result.data);
         } else {
           setError(result.response.data.message);
         }
       } catch (error) {
-        setError(error.message);
+        setError(error.response?.data?.message );
       }
     } else {
       setError("User is not authenticated.");
@@ -45,10 +42,11 @@ const MyArticle = () => {
     getUserPosts();
   }, [addPostResponse]);
 
+
+  // delete Article
+
   const handleDelete = async (id) => {
-    const confirmation = window.confirm(
-      "Are you sure you want to delete this post?"
-    );
+    const confirmation = window.confirm("Are you sure you want to delete this post?");
     if (!confirmation) return;
 
     try {
@@ -61,18 +59,17 @@ const MyArticle = () => {
       });
 
       if (response.status === 200) {
-        await getUserPosts();
+        setUserPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
       } else {
         throw new Error(response.message);
       }
     } catch (error) {
-      console.log(error);
+      setError(error.response?.data?.message || "An error occurred while deleting the post.");
     }
   };
 
 
-  // add favorites
-
+  // add Favorite
   const handleFavorite = async (postId) => {
     try {
       const token = sessionStorage.getItem("token");
@@ -87,24 +84,21 @@ const MyArticle = () => {
         }
       );
 
-      // Update the post in the local state
-      setUserPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId ? response.data.post : post
-        )
-      );
+      if (response.status === 200) {
+        setUserPosts((prevPosts) =>
+          prevPosts.map((post) => (post._id === postId ? response.data.post : post))
+        );
+      }
     } catch (error) {
-      console.log(error);
+      setError(error.response?.data?.message || "An error occurred while updating the favorite status.");
     }
   };
 
   return (
     <div className="w-2/4 mx-auto py-5">
-      <h1>My Articles</h1>
-      <hr />
       {error && <p className="text-red-500">{error}</p>}
       {userPosts.length === 0 ? (
-        <p>No articles found.</p>
+        <p className="text-4xl flex justify-center items-center">No articles found.</p>
       ) : (
         userPosts.map((post) => (
           <div key={post._id} className="py-5">
@@ -138,7 +132,6 @@ const MyArticle = () => {
             </div>
             <div>
               <Link to={`/single/${post._id}`}>
-                {" "}
                 <h1 className="text-2xl font-bold">{post.title}</h1>
                 <p className="font-thin">{post.about}</p>
               </Link>
@@ -146,7 +139,6 @@ const MyArticle = () => {
               <br />
               <div className="flex justify-between">
                 <Link to={`/single/${post._id}`}>
-                  {" "}
                   <span>read more...</span>
                 </Link>
                 <div className="flex cursor-pointer gap-2">

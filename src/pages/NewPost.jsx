@@ -1,20 +1,28 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { createPostApi } from "../services/allApi.js";
 import { AddPostResponseContext } from "../context/contextShare.jsx";
+import axios from "axios";
+import { BASE_URL } from "../services/baseUrl.js";
 
 const NewPost = () => {
-  const {addPostResponse,setAddPostResponse}=useContext(AddPostResponseContext)
+  const { addPostResponse, setAddPostResponse } = useContext(AddPostResponseContext);
   const navigate = useNavigate();
   const [postData, setPostData] = useState({
     title: "",
-    about:"",
+    about: "",
     body: "",
     tags: ""
   });
   const [token, setToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const savedToken = sessionStorage.getItem("token");
+    if (savedToken) {
+      setToken(savedToken);
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,16 +32,8 @@ const NewPost = () => {
     });
   };
 
-  useEffect(() => {
-    const savedToken = sessionStorage.getItem("token");
-    if (savedToken) {
-      setToken(savedToken);
-    }
-  }, []);
-
   const handlePublish = async () => {
-    const { title,about, body, tags } = postData;
- 
+    const { title, about, body, tags } = postData;
 
     if (!title || !about || !body || !tags) {
       alert("Please fill all the fields");
@@ -44,36 +44,33 @@ const NewPost = () => {
     setError(null);
 
     try {
-      const reqBody = { title,about, body, tags: tags.split(",").map(tag => tag.trim()) };
-    console.log("Request Body:", reqBody); // Log request body
+      const reqBody = {
+        title,
+        about,
+        body,
+        tags
+      };
 
-      if (token) {
-        const reqHeader = {
+      const reqHeader = {
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        };
-        console.log("Request Header:", reqHeader); // Log request headers
-
-    
-
-        const response = await createPostApi(postData, reqHeader);
-        console.log("Response:", response); // Log the response
-
-        if (response.status === 201) {
-          alert("Post created successfully");
-          navigate("/user/article");
-          setAddPostResponse(response.data)
-          console.log(addPostResponse);
-        } else {
-          console.error('Failed response:', response);
-          alert("Failed to publish the article");
+          Authorization: `Bearer ${token}`
         }
+      };
+
+      const response = await axios.post(`${BASE_URL}/api/posts`, reqBody, reqHeader);
+
+      if (response.status === 201) {
+        alert("Post created successfully");
+        navigate("/user/article");
+        setAddPostResponse(response.data);
       } else {
-        alert("Token is missing");
+        console.error("Failed response:", response);
+        alert("Failed to publish the article");
       }
     } catch (error) {
-      console.error('Error during post creation:', error);
-      setError('An error occurred while publishing the article');
+      console.error("Error during post creation:", error);
+      setError("An error occurred while publishing the article");
     } finally {
       setLoading(false);
     }
@@ -94,7 +91,7 @@ const NewPost = () => {
         <input
           type="text"
           name="about"
-          placeholder="What's this articel about?"
+          placeholder="What's this article about?"
           className="input input-bordered w-full max-w-4xl"
           value={postData.about}
           onChange={handleChange}
@@ -119,7 +116,7 @@ const NewPost = () => {
           className="bg-green-500 btn text-white hover:bg-green-700 btn-wide mt-5"
           disabled={loading}
         >
-          {loading ? 'Publishing...' : 'Publish Article'}
+          {loading ? "Publishing..." : "Publish Article"}
         </button>
       </div>
     </div>

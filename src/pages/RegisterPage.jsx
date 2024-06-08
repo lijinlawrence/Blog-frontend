@@ -1,26 +1,33 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { tokenAuthorizationContext } from "../context/tokenAuth.jsx";
-import { registerApi } from "../services/allApi.js";
+import { tokenAuthorizationContext } from "../context/tokenAuth";
+import axios from "axios";
+import { BASE_URL } from "../services/baseUrl";
 
 const RegisterPage = () => {
-  const { isAuthorized, setIsAuthorized } = useContext(
-    tokenAuthorizationContext
-  );
+  const { setIsAuthorized } = useContext(tokenAuthorizationContext);
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
     name: "",
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
     const { name, email, password } = userData;
     if (!name || !email || !password) {
-      alert("please fill the missing field");
-    } else {
-      const result = await registerApi(userData);
+      setError("Please fill the missing fields");
+      return;
+    }
+
+    try {
+      const result = await axios.post(`${BASE_URL}/api/users`, {
+        name,
+        email,
+        password,
+      });
       console.log(result);
 
       if (result.status === 201) {
@@ -33,20 +40,23 @@ const RegisterPage = () => {
 
         navigate("/login");
       } else {
-        alert("Email Already registerd");
+        setError(result.data.error);
       }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setError(error.response?.data?.message || "Registration failed, please try again.");
     }
   };
 
   return (
-    <div className=" flex items-center justify-center h-screen flex-col gap-5 w-2/4 mx-auto">
-      <h1 className=" text-4xl font-bold">Sign up</h1>
+    <div className="flex items-center justify-center h-screen flex-col gap-5 w-2/4 mx-auto">
+      <h1 className="text-4xl font-bold">Sign up</h1>
       <p>
-        <Link to="/login" className=" text-green-400 hover:underline">
+        <Link to="/login" className="text-green-400 hover:underline">
           Have an Account?
-        </Link>{" "}
+        </Link>
       </p>
-      <div className="  flex flex-col w-full mx-autojustify-center items-center gap-5 ">
+      <form className="flex flex-col w-full mx-auto justify-center items-center gap-5" onSubmit={handleRegister}>
         <input
           type="text"
           placeholder="Name"
@@ -74,7 +84,7 @@ const RegisterPage = () => {
         />
 
         <input
-          type="text"
+          type="password"
           placeholder="Password"
           className="input input-bordered w-full max-w-lg h-14"
           value={userData.password}
@@ -85,15 +95,15 @@ const RegisterPage = () => {
             });
           }}
         />
-      </div>
-      <div className="  ">
+
+        {error && <div className="text-red-500">{error}</div>}
         <button
-          className="btn w-32  bg-green-400 text-white hover:text-black  "
-          onClick={handleRegister}
+          type="submit"
+          className="btn w-32 bg-green-400 text-white hover:text-black"
         >
           Sign Up
         </button>
-      </div>
+      </form>
     </div>
   );
 };
