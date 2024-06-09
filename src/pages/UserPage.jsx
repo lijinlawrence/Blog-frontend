@@ -23,15 +23,15 @@ const UserPage = () => {
     fetchUserData();
   }, []);
 
-  console.log(userData);
+  console.log(userData.image);
 
   return (
     <div>
       <div className="h-[30%] w-full bg-gray-200 py-12 flex-col">
         <div className="flex flex-col justify-center items-center">
           <img
-            className="w-24 rounded-full"
-            src={userData.image || profilePlaceholder}
+            className="w-24  rounded-full"
+            src={userData.image}
             alt="Profile"
           />
           {userData.name && <p className="text-xl text-black">{userData.name}</p>}

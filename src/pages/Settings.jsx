@@ -64,7 +64,7 @@ const Settings = () => {
       });
 
       if (file) {
-        formData.append('image', file);
+        formData.append('profileImage', file);
       }
 
       const response = await axios.put(`${BASE_URL}/api/users/profile`, formData, {
