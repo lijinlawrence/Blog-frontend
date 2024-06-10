@@ -21,7 +21,7 @@ This template provides a minimal setup to get React working with Vite, featuring
 1. **Clone the repository**:
 
     ```sh
-    git clone https://github.com/your-username/your-repo-name.git
+    git clone https://github.com/lijinlawrence/Blog-frontend.git
     cd your-repo-name
     ```
 
@@ -31,9 +31,11 @@ This template provides a minimal setup to get React working with Vite, featuring
     npm install
     ```
 
-3. **To get a backend docs **:
-
+3. **To get Backend Documents**:
+     ```sh
       https://blog-backend-jpqv.onrender.com/docs/
+    ```
+
 
 
 ### Development
